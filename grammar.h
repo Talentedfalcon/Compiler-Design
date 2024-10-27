@@ -1,3 +1,6 @@
+#ifndef Grammar
+#define Grammar
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +16,12 @@ typedef struct{
     char start_symbol;
 }grammar;
 
+int has_non_terminal=0;
+int go_next=0;
+int is_last_symbol=0;
+int epsilon_found=0;
+
+//Function to input and return a grammar
 grammar input_grammar(){
     grammar G;
     G.num_term=0;
@@ -97,6 +106,7 @@ grammar input_grammar(){
     return G;
 }
 
+//Function to print out the grammar and some of it's details
 void print_grammar(grammar G){
     printf("\nTerminals: ");
     for(int i=0;i<G.num_term;i++){
@@ -111,3 +121,103 @@ void print_grammar(grammar G){
         printf("\t%s -> %s\n",G.production_rules[i][0],G.production_rules[i][1]);        
     }
 }
+
+//Return all the RHS productions made by 'symbol' for a given grammar
+char** generate_production(grammar G,int* len_symbol_production,char symbol){
+    char** result=(char**)malloc(100*sizeof(char*));
+    for(int i=0;i<G.num_non_term;i++){
+        if(G.non_term[i]==symbol){
+            for(int i=0;i<G.num_rules;i++){
+                if(symbol==G.production_rules[i][0][0]){
+                    result[(*len_symbol_production)++]=G.production_rules[i][1];
+                }
+            }
+        }
+    }
+    char* tempsymbol=(char*)malloc(1*sizeof(char));
+    tempsymbol="\0";
+    result[(*len_symbol_production)]=tempsymbol;
+    return result;
+}
+
+//Give the first of the 'symbol' for a given grammar
+void first(grammar G,char* visited_arr,int* len_visited_arr,char* result_arr,int* len_result_arr,char init_symbol,char previous_symbol,char symbol){
+    char** symbol_production;
+    int len_symbol_production=0;
+    if(is_in_arr(symbol,G.term,G.num_term)){
+        if(symbol!='#' || is_last_symbol){
+            if(!is_in_arr(symbol,visited_arr,*len_visited_arr) && !is_in_arr(symbol,result_arr,*len_result_arr)){
+                visited_arr[(*len_visited_arr)++]=symbol;
+                result_arr[(*len_result_arr)++]=symbol;
+            }
+        }
+        else{
+            if(previous_symbol==init_symbol || init_symbol==symbol){
+                result_arr[(*len_result_arr)++]=symbol;
+            }
+            epsilon_found=1;
+        }
+        return;
+    }
+    else{
+        symbol_production=generate_production(G,&len_symbol_production,symbol);
+    }
+    // printf("%d\n",len_symbol_production);
+    // printf("%s\n",symbol_production[0]);
+    if(len_symbol_production==0){
+        printf("Invalid symbol\n");
+        exit(0);
+        return;
+    }
+    else if(is_in_arr(symbol,visited_arr,*len_visited_arr) && !is_last_symbol){
+        // printf("Already Visited");
+        return;
+    }
+    else{
+        visited_arr[(*len_visited_arr)++]=symbol;
+        for (int i=0;i<len_symbol_production;i++){
+            has_non_terminal=0;
+            go_next=0;
+            if(previous_symbol=='\0'){
+                is_last_symbol=0;
+            }
+            for(int j=0;symbol_production[i][j]!='\0';j++){
+                epsilon_found=0;
+                char tempsymbol=symbol_production[i][j];
+                if(is_in_arr(tempsymbol,G.non_term,G.num_non_term)){
+                    if(previous_symbol=='\0' && symbol_production[i][j+1]=='\0'){
+                        is_last_symbol=1;
+                    }
+                }
+                first(G,visited_arr,len_visited_arr,result_arr,len_result_arr,init_symbol,symbol,tempsymbol);
+                if(go_next){
+                    break;
+                }
+
+                if(is_in_arr(tempsymbol,G.non_term,G.num_non_term)){
+                    has_non_terminal=1;
+                }
+
+                if(is_in_arr(tempsymbol,G.term,G.num_term) && tempsymbol!='#'){
+                    if(!has_non_terminal && symbol_production[i][j+1]=='\0'){
+                        go_next=1;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+//Compare 2 productions and return True if they are equal
+int compare_productions(char** prod1,char** prod2){
+    if(strcmp(prod1[0],prod2[0])){
+        return 0;
+    }
+    else if(strcmp(prod1[1],prod2[1])){
+        return 0;
+    }
+    return 1;
+}
+
+#endif

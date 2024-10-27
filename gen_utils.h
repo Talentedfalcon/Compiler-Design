@@ -1,3 +1,8 @@
+#ifndef gen_utils
+#define gen_utils
+
+#include <stdio.h>
+
 int is_in_arr(char key,char* arr,int len_arr){
     for(int i=0;i<len_arr;i++){
         if(arr[i]==key){
@@ -25,3 +30,5 @@ void remove_from_arr(char* arr,char symbol,int* len_arr){
     }
     (*len_arr)--;
 }
+
+#endif
