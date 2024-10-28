@@ -317,6 +317,19 @@ lr1_item lr1_GOTO(grammar aug_G,lr1_item_node* item_list,int* len_item_list,int 
     item_list[item_no].num_directions=num_directions;
 }
 
-
+int compare_item_productions(lr1_item i1,lr1_item i2){
+    int equalProductions=0;
+    if(i1.num_rules==i2.num_rules){
+        for(int j=0;j<i1.num_rules;j++){
+            if(compare_productions(i1.production_rules[j],i2.production_rules[j])){
+                equalProductions++;
+            }
+        }
+        if(equalProductions==i1.num_rules){
+            return 1;
+        }
+    }
+    return 0;
+}
 
 #endif
