@@ -18,7 +18,6 @@ typedef struct{
     int num_directions;
 }lr1_item_node;
 
-//Add the production @->.{start_symbol} to the end of the grammar's production
 grammar augment_grammar(grammar G){
     G.non_term[G.num_non_term++]='@';
     char* LHS=(char*)malloc(1*sizeof(char));
@@ -34,7 +33,6 @@ grammar augment_grammar(grammar G){
     return G;
 }
 
-//Initialize an lr1_item with a single production,dot position and lookahead
 lr1_item init_item(char** production,int dot_pos,char* lookaheads){
     lr1_item i;
     if(production[1][dot_pos]!='.'){
@@ -66,7 +64,6 @@ lr1_item init_item(char** production,int dot_pos,char* lookaheads){
     return i;
 }
 
-//Join 2 items together without creating duplicates
 lr1_item join_items(lr1_item i1,lr1_item i2){
     int is_unique=1;
     for(int j=0;j<i2.num_rules;j++){
@@ -86,7 +83,6 @@ lr1_item join_items(lr1_item i1,lr1_item i2){
     return i1;
 }
 
-//Return the string of symbols which appear right after the dot and it's adjacent symbol for a given grammar
 char* symbols_after_dot(char* production_RHS,int dot_pos){
     char* after_dot=(char*)malloc((strlen(production_RHS)-dot_pos+1)*sizeof(char));
     after_dot[0]='\0';
@@ -116,7 +112,6 @@ char** remove_dot(char** production){
     return temp_production;
 }
 
-//Compare 2 items based on it's productions and lookaheads and return True if they are equal
 int compare_items(lr1_item i1,lr1_item i2){
     int equalProductions=0;
     if(i1.num_rules==i2.num_rules){
@@ -134,7 +129,6 @@ int compare_items(lr1_item i1,lr1_item i2){
     return 0;
 }
 
-//Check if an item i is already present in the item_list
 int is_in_items_list(lr1_item i,lr1_item_node* item_list,int len_item_list){
     for(int j=0;j<len_item_list;j++){
         if(compare_items(i,item_list[j].i)){
@@ -144,7 +138,6 @@ int is_in_items_list(lr1_item i,lr1_item_node* item_list,int len_item_list){
     return -1;
 }
 
-//Print the productions of an item along with it's lookaheads
 void print_item(lr1_item i){
     for(int j=0;j<i.num_rules;j++){
         printf("\t%s -> %s,%s\n",i.production_rules[j][0],i.production_rules[j][1],i.lookaheads[j]);

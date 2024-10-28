@@ -1,4 +1,6 @@
 *.out
-LL1_parser.c
-notes.txt
 .vscode
+LL1_parser.c
+lalr1.h
+README.md
+notes.txt

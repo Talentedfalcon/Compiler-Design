@@ -7,7 +7,7 @@
 #include "grammar.h"
 #include "gen_utils.h"
 #include "lr1_utils.h"
-#include "parsing_table_utils.h"
+#include "parsing_utils.h"
 
 struct parsing_table generate_clr1_parsing_table(grammar G,lr1_item_node* item_list,int len_item_list){
     struct parsing_table p;
