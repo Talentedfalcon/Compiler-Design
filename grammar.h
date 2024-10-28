@@ -140,6 +140,17 @@ char** generate_production(grammar G,int* len_symbol_production,char symbol){
     return result;
 }
 
+//Compare 2 productions and return True if they are equal
+int compare_productions(char** prod1,char** prod2){
+    if(strcmp(prod1[0],prod2[0])){
+        return 0;
+    }
+    else if(strcmp(prod1[1],prod2[1])){
+        return 0;
+    }
+    return 1;
+}
+
 //Give the first of the 'symbol' for a given grammar
 void first(grammar G,char* visited_arr,int* len_visited_arr,char* result_arr,int* len_result_arr,char init_symbol,char previous_symbol,char symbol){
     char** symbol_production;
@@ -209,15 +220,99 @@ void first(grammar G,char* visited_arr,int* len_visited_arr,char* result_arr,int
     }
 }
 
-//Compare 2 productions and return True if they are equal
-int compare_productions(char** prod1,char** prod2){
-    if(strcmp(prod1[0],prod2[0])){
-        return 0;
+char** find_follow_production(grammar G,int* len_follow_production,char symbol){
+    int start_insert=0;
+    char** result=(char**)malloc(100*sizeof(char*));
+    result[0]="\0";
+    for(int i=0;i<G.num_rules;i++){
+        int len_temp=1;
+        char* tempsymbol=(char*)malloc(10*sizeof(char));
+        for(int j=0;G.production_rules[i][1][j]!='\0';j++){
+            if(G.production_rules[i][1][j]==symbol){
+                start_insert=1;
+                continue;
+            }
+            if(start_insert){
+                tempsymbol[len_temp]=G.production_rules[i][1][j];
+                len_temp++;
+            }
+        }
+        if(start_insert){
+            tempsymbol[0]=G.production_rules[i][0][0];
+            tempsymbol[len_temp]='\0';
+            result[*len_follow_production]=tempsymbol;
+            (*len_follow_production)++;
+        }
+        start_insert=0;
     }
-    else if(strcmp(prod1[1],prod2[1])){
-        return 0;
+    return result;
+}
+
+void follow(grammar G,char* visited_arr,int* len_visited_arr,char* result_arr,int* len_result_arr,char symbol){
+    if(!is_in_arr(symbol,G.non_term,G.num_non_term)){
+        printf("Invalid Symbol");
+        exit(0);
     }
-    return 1;
+    int len_follow_production=0;
+    char** follow_production=find_follow_production(G,&len_follow_production,symbol);
+    if(symbol==G.start_symbol){
+        result_arr[(*len_result_arr)++]='$';
+    }
+
+    if(is_in_arr(symbol,visited_arr,*len_visited_arr)){
+        return;
+    }
+    else{
+        visited_arr[(*len_visited_arr)++]=symbol;
+        for(int i=0;i<len_follow_production;i++){
+            for(int j=0;follow_production[i][j]!='\0';j++){
+                if(j!=0 && !epsilon_found){
+                    break;
+                }
+                if(j==0){
+                    j=1;
+                }
+                epsilon_found=0;
+                if(follow_production[i][j]=='\0'){
+                    char tempsymbol=follow_production[i][0];
+                    follow(G,visited_arr,len_visited_arr,result_arr,len_result_arr,tempsymbol);
+                    break;
+                }
+                else{
+                    char* temp_visited_arr=(char*)malloc(100*sizeof(char));
+                    int len_temp_visited_arr=0;
+                    char* first_set=(char*)malloc(100*sizeof(char));
+                    int len_first_set=0;
+
+                    char tempsymbol=follow_production[i][j];
+                    first(G,temp_visited_arr,&len_temp_visited_arr,first_set,&len_first_set,tempsymbol,'\0',tempsymbol);
+
+                    free(temp_visited_arr);
+                    for(int k=0;k<len_first_set;k++){
+                        if(first_set[k]!='#'){
+                            if(!is_in_arr(first_set[k],result_arr,*len_result_arr)){
+                                result_arr[(*len_result_arr)++]=first_set[k];
+                            }
+                        }
+                        else{
+                            if(j==len_follow_production-1){
+                                temp_visited_arr=(char*)malloc(100*sizeof(char));
+                                len_temp_visited_arr=0;
+                                
+                                char tempsymbol=follow_production[i][0];
+                                follow(G,temp_visited_arr,&len_temp_visited_arr,result_arr,len_result_arr,tempsymbol);
+                                
+                                free(temp_visited_arr);
+                            }
+                            else{
+                                epsilon_found=1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #endif

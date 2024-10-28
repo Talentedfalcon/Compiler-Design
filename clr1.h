@@ -93,6 +93,79 @@ struct parsing_table generate_clr1_parsing_table(grammar G,lr1_item_node* item_l
     return p;
 }
 
+void parse(grammar G,struct parsing_table p,char* string){
+    struct stack* s=(struct stack*)malloc(1*sizeof(struct stack));
+    s->arr=(char*)malloc(100*sizeof(char));
+    s->top=-1;
+    push(s,'$');
+    push(s,0);
 
+    int lookahead_point=0;
+    string[strlen(string)+1]='\0';
+    string[strlen(string)]='$';
+
+    printf("Stack\tTop\tString\tLA\tNext Action\n");
+    while(1){
+        int pos;
+        char* action;
+        if(string[lookahead_point]=='$'){
+            action=p.table[top(s)][p.num_term-1];
+        }
+        else if((pos=is_in_arr(string[lookahead_point],G.term,G.num_term))){
+            action=p.table[top(s)][pos-1];
+        }
+        else if((pos=is_in_arr(string[lookahead_point],G.non_term,G.num_non_term))){
+            action=p.table[top(s)][pos-1];
+        }
+        else{
+            printf("Rejected\n");
+            return;
+        }
+
+        display_stack(s);
+        printf("\t%s\t%d",string,lookahead_point);
+        printf("\t%c%d\n",action[0],action[1]);
+        
+        if(action[0]=='E'){
+            printf("Rejected\n");
+            return;
+        }
+        else if(action[0]=='A'){
+            printf("ACCEPTED\n");
+            return;
+        }
+        else if(action[0]=='S'){
+            push(s,string[lookahead_point++]);
+            push(s,action[1]);
+        }
+        else if(action[0]=='R'){
+            char** production=G.production_rules[action[1]-1];
+            int pop_count=(strlen(production[1]))*2;
+            while((pop_count--)>0){
+                pop(s);
+            }
+            display_stack(s);
+            printf("\t%s\t%d",string,lookahead_point);
+            int prev_top=top(s);
+            push(s,production[0][0]);
+            pos=is_in_arr(top(s),G.non_term,G.num_non_term);
+            if(pos){
+                char* goto_action=p.table[prev_top][p.num_term+pos-1];
+                printf("\t%c%d\n",goto_action[0],goto_action[1]);
+                if(goto_action[0]=='G'){
+                    push(s,goto_action[1]);
+                }
+                else{
+                    printf("Unknow Action\n");
+                    return;
+                }
+            }
+        }
+        else{
+            printf("Unknow Action\n");
+            return;
+        }
+    }
+}
 
 #endif

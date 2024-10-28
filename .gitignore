@@ -1,5 +1,6 @@
 *.out
 .vscode
+ll1.h
 LL1_parser.c
 lalr1.h
 README.md
