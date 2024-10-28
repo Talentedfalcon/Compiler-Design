@@ -151,6 +151,22 @@ void print_item(lr1_item i){
     }
 }
 
+void print_item_list(lr1_item_node* item_list,int len_item_list){
+    for(int i=0;i<len_item_list;i++){
+        printf("Item %d:\n",i);
+        print_item(item_list[i].i);
+        printf("\tDirections: \n");
+        if(item_list[i].num_directions==0){
+            printf("\t\tReduce State\n");
+        }
+        else{
+            for(int j=0;j<item_list[i].num_directions;j++){
+                printf("\t\t%c,%d\n",item_list[i].direction[j][0],item_list[i].direction[j][1]);
+            }
+        }
+    }
+}
+
 void lr1_closure(grammar aug_G,lr1_item* i){
     int j=0;
     while(j<i->num_rules){
@@ -300,5 +316,7 @@ lr1_item lr1_GOTO(grammar aug_G,lr1_item_node* item_list,int* len_item_list,int 
     item_list[item_no].direction=direction;
     item_list[item_no].num_directions=num_directions;
 }
+
+
 
 #endif

@@ -1,3 +1,4 @@
 *.out
 LL1_parser.c
 notes.txt
+.vscode

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+/*Array Functions*/
 int is_in_arr(char key,char* arr,int len_arr){
     for(int i=0;i<len_arr;i++){
         if(arr[i]==key){
@@ -29,6 +30,38 @@ void remove_from_arr(char* arr,char symbol,int* len_arr){
         }
     }
     (*len_arr)--;
+}
+
+/*Stack Functions*/
+struct stack{
+    char* arr;
+    int top;
+};
+
+void push(struct stack* s,char data){
+    s->top++;
+    s->arr[s->top]=data;
+}
+
+void pop(struct stack* s){
+    s->arr[s->top]=-1;
+    s->top--;
+}
+
+char top(struct stack* s){
+    return s->arr[s->top]; 
+}
+
+void display_stack(struct stack* s){
+    for(int i=0;i<s->top+1;i++){
+        if(i%2==0){
+            printf("%c",s->arr[i]);
+        }
+        else{
+            printf("%d",s->arr[i]);
+        }        
+    }
+    printf("\t%d",s->top);
 }
 
 #endif
