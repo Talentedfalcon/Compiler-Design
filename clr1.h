@@ -35,33 +35,29 @@ struct parsing_table generate_clr1_parsing_table(grammar G,lr1_item_node* item_l
                     else{
                         char* temp=(char*)malloc(2*sizeof(char));
                         temp[0]='R';
-                        for(int k=0;k<G.num_rules;k++){
-                            char** temp_production=remove_dot(production);
-                            if(compare_productions(G.production_rules[k],temp_production)){
-                                temp[1]=k+1;
-                                char* lookaheads=item_list[i].i.lookaheads[j];
-                                for(int l=0;l<strlen(lookaheads);l++){
-                                    int pos=is_in_arr(lookaheads[l],G.term,G.num_term);
-                                    if(!pos){
-                                        if(p.table[i][p.num_term-1][0]=='E'){
-                                            p.table[i][p.num_term-1]=temp;
-                                        }
-                                        else{
-                                            conflict_type(p.table[i][p.num_term-1][0],temp[0]);
-                                            exit(0);
-                                        }
-                                    }
-                                    else{
-                                        if(p.table[i][pos-1][0]=='E'){
-                                            p.table[i][pos-1]=temp;
-                                        }
-                                        else{
-                                            conflict_type(p.table[i][pos-1][0],temp[0]);
-                                            exit(0);
-                                        }
-                                    }
+                        char** temp_production=remove_dot(production);
+                        temp[1]=production_position(temp_production,G);
+
+                        char* lookaheads=item_list[i].i.lookaheads[j];
+                        for(int k=0;k<strlen(lookaheads);k++){
+                            int pos=is_in_arr(lookaheads[k],G.term,G.num_term);
+                            if(!pos){
+                                if(p.table[i][p.num_term-1][0]=='E'){
+                                    p.table[i][p.num_term-1]=temp;
                                 }
-                                break;
+                                else{
+                                    conflict_type(p.table[i][p.num_term-1][0],temp[0]);
+                                    exit(0);
+                                }
+                            }
+                            else{
+                                if(p.table[i][pos-1][0]=='E'){
+                                    p.table[i][pos-1]=temp;
+                                }
+                                else{
+                                    conflict_type(p.table[i][pos-1][0],temp[0]);
+                                    exit(0);
+                                }
                             }
                         }
                     }

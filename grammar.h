@@ -151,6 +151,18 @@ int compare_productions(char** prod1,char** prod2){
     return 1;
 }
 
+//Returns the position of a given production
+int production_position(char** key_prod,grammar G){
+    int pos=0;
+    for(int i=0;i<G.num_rules;i++){
+        if(compare_productions(G.production_rules[i],key_prod)){
+            pos=i+1;
+            break;
+        }
+    }
+    return pos;
+}
+
 //Give the first of the 'symbol' for a given grammar
 void first(grammar G,char* visited_arr,int* len_visited_arr,char* result_arr,int* len_result_arr,char init_symbol,char previous_symbol,char symbol){
     char** symbol_production;
