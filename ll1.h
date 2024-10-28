@@ -75,4 +75,30 @@ struct parsing_table generate_ll1_parsing_table(grammar G){
     return p;
 }
 
+void parse(grammar G,struct parsing_table p,char* string){
+    struct stack* s=(struct stack*)malloc(1*sizeof(struct stack));
+    s->arr=(char*)malloc(100*sizeof(char));
+    s->top=-1;
+    push(s,'$');
+    push(s,G.start_symbol);
+
+    int lookahead_point=0;
+    string[strlen(string)+1]='\0';
+    string[strlen(string)]='$';
+
+    printf("Stack\tTop\tString\tLA\n");
+
+    while(1){
+        for(int i=0;i<(s->top)+1;i++){
+            printf("%c",s->arr[i]);
+        }
+        printf("\t%d\t%s\t%d",s->top,string,lookahead_point);
+        
+        
+        break;
+        // printf("\t%c%d\n",action[0],action[1]);
+    }
+    printf("\n");
+}
+
 #endif

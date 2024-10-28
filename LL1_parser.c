@@ -11,5 +11,12 @@ int main(){
     printf("LL Table:\n");
     print_parsing_table(G,p);
 
+    printf("\n");
+    char* string=(char*)malloc(100*sizeof(char));
+    printf("Input String: ");
+    scanf("%s",string);
+
+    printf("\n");
+    parse(G,p,string);
     return 0;
 }

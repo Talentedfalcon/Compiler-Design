@@ -1,6 +1,7 @@
 *.out
 .vscode
 notes.txt
+temp.c
 
 lalr1.h
 README.md
