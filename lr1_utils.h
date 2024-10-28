@@ -83,10 +83,18 @@ lr1_item join_items(lr1_item i1,lr1_item i2){
     return i1;
 }
 
+void join_lookaheads(char* lookahead1,char* lookahead2){
+    for(int i=0;i<strlen(lookahead2);i++){
+        if(!is_in_arr(lookahead2[i],lookahead1,strlen(lookahead1))){
+            lookahead1[strlen(lookahead1)+i]=lookahead2[i];
+        }
+    }
+    lookahead1[strlen(lookahead1)+strlen(lookahead2)-1]='\0';
+}
+
 char* symbols_after_dot(char* production_RHS,int dot_pos){
     char* after_dot=(char*)malloc((strlen(production_RHS)-dot_pos+1)*sizeof(char));
     after_dot[0]='\0';
-    // printf("%d %d",strlen(production_RHS),dot_pos);
     int i;
     for(i=dot_pos+2;i<strlen(production_RHS);i++){
         after_dot[i-dot_pos-2]=production_RHS[i];
@@ -129,6 +137,21 @@ int compare_items(lr1_item i1,lr1_item i2){
     return 0;
 }
 
+int compare_item_productions(lr1_item i1,lr1_item i2){
+    int equalProductions=0;
+    if(i1.num_rules==i2.num_rules){
+        for(int j=0;j<i1.num_rules;j++){
+            if(compare_productions(i1.production_rules[j],i2.production_rules[j])){
+                equalProductions++;
+            }
+        }
+        if(equalProductions==i1.num_rules){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int is_in_items_list(lr1_item i,lr1_item_node* item_list,int len_item_list){
     for(int j=0;j<len_item_list;j++){
         if(compare_items(i,item_list[j].i)){
@@ -146,7 +169,6 @@ void print_item(lr1_item i){
 
 void print_item_list(lr1_item_node* item_list,int len_item_list){
     for(int i=0;i<len_item_list;i++){
-        printf("Item %d:\n",i);
         print_item(item_list[i].i);
         printf("\tDirections: \n");
         if(item_list[i].num_directions==0){
@@ -154,7 +176,6 @@ void print_item_list(lr1_item_node* item_list,int len_item_list){
         }
         else{
             for(int j=0;j<item_list[i].num_directions;j++){
-                printf("\t\t%c,%d\n",item_list[i].direction[j][0],item_list[i].direction[j][1]);
             }
         }
     }
@@ -174,7 +195,6 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                 temp[1]='\0';
                 
                 char* after_dot=symbols_after_dot(i->production_rules[j][1],i->dot_pos[j]);
-                // printf("%s\n",after_dot);
 
                 char* first_set=(char*)malloc(100*sizeof(char));
                 int len_first_set=0;
@@ -182,12 +202,18 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                     char* visited_arr=(char*)malloc(100*sizeof(char));
                     int len_visited_arr=0;
                     first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,aug_G.production_rules[0][0][0],'\0',after_dot[k]);
+                    if(!is_in_arr('#',first_set,len_first_set)){
+                        break;
+                    }
                 }
                 for(int k=0;k<strlen(i->lookaheads[j]);k++){
                     char* visited_arr=(char*)malloc(100*sizeof(char));
                     int len_visited_arr=0;
                     if(i->lookaheads[j][k]!='$'){
                         first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,aug_G.production_rules[0][0][0],'\0',i->lookaheads[j][k]);
+                    }
+                    else{
+                        first_set[len_first_set++]='$';
                     }
                 }
                 first_set[len_first_set]='\0';
@@ -203,7 +229,8 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                     lookaheads=first_set;
                 }
                 else{
-                    lookaheads=i->lookaheads[j];
+                    lookaheads=(char*)malloc(100*sizeof(char));
+                    strcpy(lookaheads,i->lookaheads[j]);
                 }
 
                 for(int k=0;k<len_symbol_production;k++){
@@ -216,12 +243,13 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                     }
                     temp_production[1]=temp_RHS;
 
-                    // printf("%s->%s,%s\n",temp_production[0],temp_production[1],lookaheads);
-
                     int production_in_item=0;
                     for(int l=0;l<i->num_rules;l++){
-                        if((!strcmp(lookaheads,i->lookaheads[l])) && compare_productions(temp_production,i->production_rules[l])){
+                        if(compare_productions(temp_production,i->production_rules[l])){
                             production_in_item=1;
+                            if((strcmp(lookaheads,i->lookaheads[l]))){
+                                join_lookaheads(i->lookaheads[l],lookaheads);
+                            }
                         }
                     }
                     if(!production_in_item){
@@ -231,15 +259,12 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                         i->num_rules++;
                     }
                 }
-                // printf("\n");
             }
         }
         else{
             printf("Invalid Item");
             exit(0);
         }
-        // printf("%d %d\n",i->num_rules,j);
-        // print_item(*i);
         j++;
     }
 }
@@ -279,7 +304,6 @@ lr1_item lr1_GOTO(grammar aug_G,lr1_item_node* item_list,int* len_item_list,int 
 
             // printf("GOTO Item:\n");
             // for(int k=0;k<len_GOTO_items;k++){
-            //     printf("\tItem %d:\n",k);
             //     print_item(GOTO_items[k]);                
             // }
 
@@ -299,7 +323,6 @@ lr1_item lr1_GOTO(grammar aug_G,lr1_item_node* item_list,int* len_item_list,int 
             else{
                 temp_direction[1]=new_item_pos;
             }
-            // printf("%c,%d\n",temp_direction[0],temp_direction[1]);
             direction[num_directions++]=temp_direction;
 
             // printf("Combined Items:\n");
@@ -308,21 +331,6 @@ lr1_item lr1_GOTO(grammar aug_G,lr1_item_node* item_list,int* len_item_list,int 
     }
     item_list[item_no].direction=direction;
     item_list[item_no].num_directions=num_directions;
-}
-
-int compare_item_productions(lr1_item i1,lr1_item i2){
-    int equalProductions=0;
-    if(i1.num_rules==i2.num_rules){
-        for(int j=0;j<i1.num_rules;j++){
-            if(compare_productions(i1.production_rules[j],i2.production_rules[j])){
-                equalProductions++;
-            }
-        }
-        if(equalProductions==i1.num_rules){
-            return 1;
-        }
-    }
-    return 0;
 }
 
 #endif

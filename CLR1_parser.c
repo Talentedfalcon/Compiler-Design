@@ -11,7 +11,9 @@ int main(){
     lr1_item_node* item_list=(lr1_item_node*)malloc(100*sizeof(lr1_item_node));
     int len_item_list=0;
 
-    item_list[len_item_list++].i=init_item(aug_G.production_rules[aug_G.num_rules-1],0,"$");
+    char* lookaheads=(char*)malloc(100*sizeof(char));
+    lookaheads[0]='$';
+    item_list[len_item_list++].i=init_item(aug_G.production_rules[aug_G.num_rules-1],0,lookaheads);
 
     lr1_closure(aug_G,&item_list[0].i);
     int j=0;
