@@ -1,7 +1,6 @@
 *.out
 .vscode
-ll1.h
-LL1_parser.c
+notes.txt
+
 lalr1.h
 README.md
-notes.txt
