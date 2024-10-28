@@ -64,4 +64,17 @@ void display_stack(struct stack* s){
     printf("\t%d",s->top);
 }
 
+/*GOTO Action Function*/
+void conflict_type(char action1,char action2){
+    if(action1=='R' && action2=='R'){
+        printf("RR Conflict\n");
+    }
+    else if((action1=='R' && action2=='S') || (action1=='S' && action2=='R')){
+        printf("SR Conflict\n");
+    }
+    else{
+        printf("Conflict");
+    }
+}
+
 #endif

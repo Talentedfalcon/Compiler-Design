@@ -11,6 +11,7 @@
 
 struct parsing_table generate_clr1_parsing_table(grammar G,lr1_item_node* item_list,int len_item_list){
     struct parsing_table p;
+    p.type=LR1;
     p.num_items=len_item_list;
     p.num_term=G.num_term+1;
     p.num_non_term=G.num_non_term;
