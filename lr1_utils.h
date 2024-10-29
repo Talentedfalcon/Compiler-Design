@@ -65,21 +65,21 @@ lr1_item init_item(char** production,int dot_pos,char* lookaheads){
 }
 
 lr1_item join_items(lr1_item i1,lr1_item i2){
-    int is_unique=1;
     for(int j=0;j<i2.num_rules;j++){
-        // for(int k=0;k<i1.num_rules;k++){
-        //     if(compare_productions(i1.production_rules[k],i2.production_rules[j])){
-        //         is_unique=0;
-        //         break;
-        //     }
-        // }
+        int is_unique=1;
+        for(int k=0;k<i1.num_rules;k++){
+            if(compare_productions(i2.production_rules[j],i1.production_rules[k])){
+                is_unique=0;
+                break;
+            }
+        }
         if(is_unique){
             i1.production_rules[i1.num_rules+j]=i2.production_rules[j];
             i1.dot_pos[i1.num_rules+j]=i2.dot_pos[j];
             i1.lookaheads[i1.num_rules+j]=i2.lookaheads[j];
+            i1.num_rules++;
         }
     }
-    i1.num_rules+=i2.num_rules;
     return i1;
 }
 
@@ -92,14 +92,20 @@ void join_lookaheads(char* lookahead1,char* lookahead2){
     lookahead1[strlen(lookahead1)+strlen(lookahead2)-1]='\0';
 }
 
-char* symbols_after_dot(char* production_RHS,int dot_pos){
-    char* after_dot=(char*)malloc((strlen(production_RHS)-dot_pos+1)*sizeof(char));
+char* symbols_after_dot(char* production_RHS,int dot_pos,char* lookaheads){
+    int len_after_dot=strlen(production_RHS)-dot_pos+1+strlen(lookaheads);
+    char* after_dot=(char*)malloc((len_after_dot)*sizeof(char));
     after_dot[0]='\0';
-    int i;
-    for(i=dot_pos+2;i<strlen(production_RHS);i++){
-        after_dot[i-dot_pos-2]=production_RHS[i];
+    int i=0;
+    int j=0;
+    for(i=0;i<len_after_dot;i++){
+        if(i<strlen(production_RHS)-dot_pos-2){
+            after_dot[i]=production_RHS[i+dot_pos+2];
+        }
+        else{
+            after_dot[i]=lookaheads[j++];
+        }
     }
-    after_dot[i-dot_pos-2]='\0';
     return after_dot;
 }
 
@@ -176,6 +182,7 @@ void print_item_list(lr1_item_node* item_list,int len_item_list){
         }
         else{
             for(int j=0;j<item_list[i].num_directions;j++){
+                printf("\t\t%c,%d\n",item_list[i].direction[j][0],item_list[i].direction[j][1]);
             }
         }
     }
@@ -194,35 +201,44 @@ void lr1_closure(grammar aug_G,lr1_item* i){
                 temp[0]=symbol;
                 temp[1]='\0';
                 
-                char* after_dot=symbols_after_dot(i->production_rules[j][1],i->dot_pos[j]);
-
+                char* after_dot=symbols_after_dot(i->production_rules[j][1],i->dot_pos[j],i->lookaheads[j]);
+                
                 char* first_set=(char*)malloc(100*sizeof(char));
                 int len_first_set=0;
+
                 for(int k=0;k<strlen(after_dot);k++){
                     char* visited_arr=(char*)malloc(100*sizeof(char));
                     int len_visited_arr=0;
-                    first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,aug_G.production_rules[0][0][0],'\0',after_dot[k]);
+                    if(after_dot[k]!='$'){
+                        first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,after_dot[k],'\0',after_dot[k]);
+                    }
+                    else{
+                        first_set[len_first_set++]='$';
+                        continue;
+                    }
+                    printf("{ ");
+                    for(int k=0;k<len_first_set;k++){
+                        printf("%c",first_set[k]);
+                    }
+                    printf(" }\n");
                     if(!is_in_arr('#',first_set,len_first_set)){
                         break;
                     }
                 }
-                for(int k=0;k<strlen(i->lookaheads[j]);k++){
-                    char* visited_arr=(char*)malloc(100*sizeof(char));
-                    int len_visited_arr=0;
-                    if(i->lookaheads[j][k]!='$'){
-                        first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,aug_G.production_rules[0][0][0],'\0',i->lookaheads[j][k]);
-                    }
-                    else{
-                        first_set[len_first_set++]='$';
-                    }
-                }
-                first_set[len_first_set]='\0';
-
-                // printf("{ ");
-                // for(int k=0;k<strlen(first_set);k++){
-                //     printf("%c",first_set[k]);
+                // if(continue_first){
+                //     for(int k=0;k<strlen(i->lookaheads[j]);k++){
+                //         char* visited_arr=(char*)malloc(100*sizeof(char));
+                //         int len_visited_arr=0;
+                //         first_set[len_first_set++]=i->lookaheads[j][k];
+                //         // if(i->lookaheads[j][k]!='$'){
+                //         //     // first(aug_G,visited_arr,&len_visited_arr,first_set,&len_first_set,aug_G.production_rules[0][0][0],'\0',i->lookaheads[j][k]);
+                //         // }
+                //         // else{
+                //         //     first_set[len_first_set++]='$';
+                //         // }
+                //     }
                 // }
-                // printf(" }\n");
+                first_set[len_first_set]='\0';
 
                 char* lookaheads;
                 if(strlen(first_set)>0){
@@ -265,6 +281,9 @@ void lr1_closure(grammar aug_G,lr1_item* i){
             printf("Invalid Item");
             exit(0);
         }
+        printf("Target: %s %s\n",i->production_rules[j][0],i->production_rules[j][1]);
+        print_item(*i);
+        printf("\n");
         j++;
     }
 }

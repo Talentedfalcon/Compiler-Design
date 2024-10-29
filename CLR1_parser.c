@@ -17,25 +17,25 @@ int main(){
 
     lr1_closure(aug_G,&item_list[0].i);
     int j=0;
-    while(j<len_item_list){
-        lr1_GOTO(aug_G,item_list,&len_item_list,j);
-        j++;
-    }
+    // while(j<len_item_list){
+    //     lr1_GOTO(aug_G,item_list,&len_item_list,j);
+    //     j++;
+    // }
 
     printf("\n");
     print_item_list(item_list,len_item_list);
 
-    struct parsing_table p=generate_clr1_parsing_table(G,item_list,len_item_list);
-    printf("\nCLR Table:\n");
-    print_parsing_table(G,p);
+    // struct parsing_table p=generate_clr1_parsing_table(G,item_list,len_item_list);
+    // printf("\nCLR Table:\n");
+    // print_parsing_table(G,p);
 
-    printf("\n");
-    char* string=(char*)malloc(100*sizeof(char));
-    printf("Input String: ");
-    scanf("%s",string);
+    // printf("\n");
+    // char* string=(char*)malloc(100*sizeof(char));
+    // printf("Input String: ");
+    // scanf("%s",string);
 
-    printf("\n");
-    parse(G,p,string);
+    // printf("\n");
+    // parse(G,p,string);
 
     return 0;
 }
